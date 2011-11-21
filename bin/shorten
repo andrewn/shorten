@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'rest-client'
+require 'logger'
+
+log = Logger.new(STDERR)
+log.level = Logger::FATAL
+
+options = {}
+option_parser = OptionParser.new do |opts|
+end
+
+url_to_shorten = ARGV.first
+
+log.debug "POST 'http://git.io/', :url => #{url_to_shorten}"
+
+log.debug "git.io shorten #{url_to_shorten}"
+
+# TODO: Validate URI
+response = RestClient.post 'http://git.io/', :url => url_to_shorten do |response, request, result| 
+  case response.code
+    when 201
+      STDOUT << "#{url_to_shorten}\n"
+      STDOUT << "-->\n"
+      STDOUT << "#{response.headers[:location]}\n"
+    when 422
+      STDOUT << "Error: #{response.body}\n"
+    else
+      response.return!(request, result)
+    end
+end
